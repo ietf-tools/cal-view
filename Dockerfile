@@ -1,17 +1,3 @@
-# =====================
-# --- Builder Stage ---
-# =====================
-FROM node:24 AS builder
-
-WORKDIR /app
-COPY . .
-
-RUN npm ci
-RUN npm run build
-
-# ===================
-# --- Final Image ---
-# ===================
 FROM node:24
 LABEL maintainer="IETF Tools Team <tools-discuss@ietf.org>"
 
@@ -23,11 +9,12 @@ WORKDIR /app
 
 COPY .npmrc .npmrc
 COPY index.js index.js
+COPY meeting.json meeting.json
 COPY package.json package.json
 COPY package-lock.json package-lock.json
-COPY --from=builder /app/dist /app/dist
+COPY dist dist
 
-RUN npm ci
+RUN npm ci --omit=dev
 
 USER node:node
 CMD ["node", "index.js"]

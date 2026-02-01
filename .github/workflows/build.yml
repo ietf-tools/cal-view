@@ -1,0 +1,95 @@
+name: Build and Release
+run-name: Build ${{ github.run_number }} of branch ${{ github.ref_name }} by @${{ github.actor }}
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # -----------------------------------------------------------------
+  # BUILD
+  # -----------------------------------------------------------------
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get Next Version
+        id: semver
+        uses: ietf-tools/semver-action@v1
+        with:
+          token: ${{ github.token }}
+          branch: main
+          skipInvalidTags: true
+          patchList: fix, bugfix, perf, refactor, test, tests, chore
+
+      - name: Set package.json version
+        uses: KageKirin/set-node-package-version@v1.0.0
+        with:
+          file: package.json
+          version: ${{ steps.semver.outputs.nextStrict }}
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Docker Image
+        uses: docker/build-push-action@v6
+        env:
+          DOCKER_BUILD_SUMMARY: false
+        with:
+          context: .
+          file: Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/ietf-tools/red:${{ steps.semver.outputs.nextStrict }}
+
+      - name: Create Draft Release
+        uses: ncipollo/release-action@v1.20.0
+        with:
+          prerelease: true
+          draft: false
+          owner: ietf-tools
+          repo: cal-view
+          commit: ${{ github.sha }}
+          tag: ${{ steps.semver.outputs.nextStrict }}
+          name: ${{ steps.semver.outputs.nextStrict }}
+          body: '*pending*'
+          token: ${{ github.token }}
+
+      - name: Generate CHANGELOG
+        id: changelog
+        uses: Requarks/changelog-action@v1
+        with:
+          token: ${{ github.token }}
+          fromTag: ${{ steps.semver.outputs.nextStrict }}
+          toTag: ${{ steps.semver.outputs.current }}
+          writeToFile: false
+
+      - name: Finalize Release
+        uses: ncipollo/release-action@v1.20.0
+        with:
+          allowUpdates: true
+          makeLatest: true
+          draft: false
+          owner: ietf-tools
+          repo: cal-view
+          tag: ${{ steps.semver.outputs.nextStrict }}
+          name: ${{ steps.semver.outputs.nextStrict }}
+          body: ${{ steps.changelog.outputs.changes }}
+          token: ${{ github.token }}

@@ -87,20 +87,10 @@
               v-for="booking of day.bookings"
               :key="booking.id"
               class="bg-emerald-800 rounded-sm px-2 py-1 text-sm">
-              <div class="font-medium text-emerald-100">8:00-9:00</div>
-              <div class="font-bold text-white">McGill</div>
-              <div class="text-white">Zero Trust</div>
+              <div class="font-medium text-emerald-100">{{ booking.timeDisplay }}</div>
+              <div class="font-bold text-white">{{ booking.roomName }}</div>
+              <div class="text-white">{{ booking.title }}</div>
             </div>
-            <!-- <div class="bg-yellow-700 rounded-sm px-2 py-1 text-sm">
-              <div class="font-medium text-yellow-100">9:15-9:45</div>
-              <div class="font-bold text-white">McGill</div>
-              <div class="text-white">SONiC Routing Workshop</div>
-            </div>
-            <div class="bg-purple-700 rounded-sm px-2 py-1 text-sm">
-              <div class="font-medium text-purple-100">13:00-14:00</div>
-              <div class="font-bold text-white">McGill</div>
-              <div class="text-white">Interface to In-Network Computing Functions (I2ICF)</div>
-            </div> -->
           </div>
         </div>
       </div>
@@ -132,6 +122,8 @@ const state = reactive({
     endDate: DateTime.fromISO('2000-01-02'),
     timezone: 'America/New_York'
   },
+  rooms: [],
+  bookings: [],
   timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
   days: []
 })
@@ -146,23 +138,43 @@ const meetingDates = computed(() => {
   }
 })
 
+const colors = ['emerald', 'sky', 'yellow', 'purple', 'pink', 'indigo']
+
 async function fetchData() {
   try {
     const resp = await fetch('/_data').then((r) => r.json())
     state.timezone = resp.meeting.timezone
     state.meeting = {
       ...resp.meeting,
-      startDate: DateTime.fromISO(resp.meeting.startDate, { zone: state.timezone }),
-      endDate: DateTime.fromISO(resp.meeting.endDate, { zone: state.timezone }).endOf('day')
+      startDate: DateTime.fromISO(resp.meeting.startDate, { zone: resp.meeting.timezone }),
+      endDate: DateTime.fromISO(resp.meeting.endDate, { zone: resp.meeting.timezone }).endOf('day')
     }
+    state.rooms = resp.rooms.map((r, rIdx) => {
+      return {
+        ...r,
+        color: colors[rIdx] ?? 'sky'
+      }
+    })
+    state.bookings = resp.bookings.map((b) => {
+      const start = DateTime.fromISO(b.start, { zone: state.meeting.timezone })
+      const end = DateTime.fromISO(b.end, { zone: state.meeting.timezone })
+      return {
+        ...b,
+        start,
+        end,
+        timeDisplay: `${start.toFormat('H:mm')}-${end.toFormat('H:mm')}`
+      }
+    })
     state.days = []
     let day = state.meeting.startDate
     while (day < state.meeting.endDate) {
+      const dayStart = day.startOf('day')
+      const dayEnd = day.endOf('day')
       state.days.push({
         id: day.toISODate(),
         name: day.weekdayLong,
         dateLabel: day.toFormat('LLLL d, yyyy'),
-        bookings: []
+        bookings: state.bookings.filter((b) => b.start >= dayStart && b.start <= dayEnd)
       })
       day = day.plus({ days: 1 })
     }

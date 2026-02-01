@@ -12,6 +12,7 @@ import meeting from './meeting.json' with { type: 'json' }
 const state = {
   data: {
     meeting,
+    rooms: [],
     bookings: []
   },
   fetchedAt: null,
@@ -63,9 +64,31 @@ fastify.listen({ port: 3000 }, function (err, _) {
 
 async function fetchCalData() {
   state.isFetching = true
-  console.info(`${new Date().toISOString()} - Fetching Cal data...`)
   try {
-    const resp = await fetch(
+    // FETCH ROOMS
+    console.info(`${new Date().toISOString()} - Fetching rooms...`)
+    let resp = await fetch(
+      `https://api.cal.com/v2/organizations/${process.env.CAL_ORG_ID}/teams/${process.env.CAL_TEAM_ID}/event-types`,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.CAL_API_KEY}`
+        }
+      }
+    ).then((r) => r.json())
+    if (resp?.status !== 'success') {
+      throw new Error(resp?.error ?? 'Invalid Response')
+    }
+    state.data.rooms = resp.data.map((bk) => ({
+      id: bk.id,
+      title: bk.title,
+      description: bk.description,
+      slug: bk.slug
+    }))
+    console.info(`${new Date().toISOString()} - Fetched ${resp.data?.length ?? 0} rooms.`)
+
+    // FETCH BOOKINGS
+    console.info(`${new Date().toISOString()} - Fetching bookings...`)
+    resp = await fetch(
       `https://api.cal.com/v2/organizations/${process.env.CAL_ORG_ID}/teams/${process.env.CAL_TEAM_ID}/bookings?take=250&status=upcoming,recurring,past`,
       {
         headers: {
@@ -77,14 +100,16 @@ async function fetchCalData() {
       throw new Error(resp?.error ?? 'Invalid Response')
     }
     state.data.bookings = resp.data.map((bk) => ({
-      id: bk.uid,
-      title: bk.title,
+      id: bk.id,
+      roomId: bk.eventType.id,
+      roomName: state.data.rooms.find((r) => r.id === bk.eventType.id)?.title,
+      title: bk.bookingFieldsResponses.title,
       description: bk.description,
       start: bk.start,
       end: bk.end,
       location: bk.location
     }))
-    console.info(`${new Date().toISOString()} - Fetched ${state.data?.length ?? 0} bookings.`)
+    console.info(`${new Date().toISOString()} - Fetched ${resp.data?.length ?? 0} bookings.`)
   } catch (err) {
     console.warn(err)
   }

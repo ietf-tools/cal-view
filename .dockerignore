@@ -1,0 +1,13 @@
+.vscode
+public
+src
+.editorconfig
+.env.sample
+.gitattributes
+.gitignore
+.oxfmtrc.json
+.oxlintrc.json
+eslint.config.js
+index.html
+jsconfig.json
+README.md

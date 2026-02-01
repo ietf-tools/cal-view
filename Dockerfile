@@ -21,6 +21,7 @@ RUN mkdir -p /app && \
     chown node:node /app
 WORKDIR /app
 
+COPY .npmrc .npmrc
 COPY index.js index.js
 COPY package.json package.json
 COPY package-lock.json package-lock.json

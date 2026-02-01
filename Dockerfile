@@ -21,7 +21,9 @@ RUN mkdir -p /app && \
     chown node:node /app
 WORKDIR /app
 
-COPY . .
+COPY index.js index.js
+COPY package.json package.json
+COPY package-lock.json package-lock.json
 COPY --from=builder /app/dist /app/dist
 
 RUN npm ci

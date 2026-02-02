@@ -46,6 +46,7 @@ jobs:
         run: |
           npm ci
           npm run build
+          yq -iP '.root = "/app"' dist/vite.config.json -o json
 
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3

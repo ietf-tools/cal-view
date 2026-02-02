@@ -55,7 +55,7 @@ fastify.setErrorHandler((err, req, reply) => {
 
 await fastify.vite.ready()
 
-fastify.listen({ port: 3000 }, function (err, _) {
+fastify.listen({ port: 3000, host: '0.0.0.0' }, function (err, _) {
   if (err) {
     fastify.log.error(err)
     process.exit(1)

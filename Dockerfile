@@ -18,4 +18,5 @@ COPY dist dist
 RUN npm ci --omit=dev
 
 USER node:node
+EXPOSE 3000
 CMD ["node", "index.js"]

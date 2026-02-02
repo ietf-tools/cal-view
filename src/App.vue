@@ -26,6 +26,7 @@
               <a
                 href="https://ietf.cal.com/side-meetings"
                 target="_blank"
+                tabindex="1"
                 class="relative inline-flex items-center gap-x-1.5 rounded-md bg-sky-500 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-sky-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 dark:shadow-none">
                 <PlusIcon class="-ml-0.5 size-5" aria-hidden="true" />
                 Request Meeting Room
@@ -44,7 +45,7 @@
             </h2>
             <h2 class="text-xl font-medium tracking-tight text-sky-200">{{ meetingDates }}</h2>
           </div>
-          <div class="shrink-0">
+          <div class="shrink-0 hidden sm:block">
             <label for="timezone" class="block text-sm/6 font-medium text-sky-200">
               Timezone
             </label>
@@ -52,8 +53,9 @@
               <select
                 id="timezone"
                 name="timezone"
+                tabindex="2"
                 v-model="state.timezone"
-                class="col-start-1 row-start-1 w-full appearance-none rounded-md py-1.5 pr-8 pl-3 text-base outline-1 -outline-offset-1 focus-visible:outline-2 focus-visible:-outline-offset-2 sm:text-sm/6 bg-white/5 text-white outline-white/10 *:bg-gray-800 focus-visible:outline-sky-500">
+                class="col-start-1 row-start-1 w-full appearance-none rounded-md py-1.5 pr-8 pl-3 text-base outline-1 -outline-offset-1 hover:outline-1 hover:-outline-offset-2 hover:outline-sky-600 focus-visible:outline-2 focus-visible:-outline-offset-2 sm:text-sm/6 bg-white/5 text-white outline-white/10 *:bg-gray-800 focus-visible:outline-sky-500">
                 <option v-for="tz of timezones" :key="tz">{{ tz }}</option>
               </select>
               <ChevronDownIcon
@@ -68,26 +70,34 @@
 
   <main class="-mt-32">
     <div class="mx-auto max-w-7xl px-4 pb-12">
-      <div class="grid grid-cols-5 gap-1">
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-1">
         <div
           class="bg-sky-950 rounded-md px-2 py-2 shadow-xl outline-1 -outline-offset-1 outline-white/10"
           v-for="day of state.days"
           :key="day.id">
-          <h3 class="font-medium text-white">{{ day.name }}</h3>
-          <div class="text-xs/tight font-medium text-sky-300 border-b border-gray-400/25 pb-2">
+          <h3 class="font-semibold text-white text-center">{{ day.name }}</h3>
+          <div
+            class="text-sm/tight font-medium text-sky-300 border-b border-gray-400/25 pb-2 text-center">
             {{ day.dateLabel }}
           </div>
           <div class="grid grid-cols-1 gap-2 mt-2">
             <div
               v-if="day.bookings.length < 1"
-              class="bg-black/30 rounded-sm px-2 py-20 text-center italic text-sm text-white/70">
+              class="bg-black/10 rounded-sm px-2 py-20 text-center italic text-sm text-sky-200/80">
               No side meeting booked yet.
             </div>
             <div
               v-for="booking of day.bookings"
               :key="booking.id"
-              class="bg-emerald-800 rounded-sm px-2 py-1 text-sm">
-              <div class="font-medium text-emerald-100">{{ booking.timeDisplay }}</div>
+              @click="showBooking(booking)"
+              :tabindex="booking.orderIdx + 3"
+              :class="
+                booking.room.bgColor +
+                ' rounded-sm p-2 text-sm border-l border-l-white/30 border-t border-t-white/30 shadow hover:outline-2 hover:outline-offset-2 hover:outline-sky-200/80 focus:outline-2 focus:outline-offset-2 focus:outline-sky-200/80 cursor-pointer'
+              ">
+              <div :class="booking.room.textColor + ' font-semibold'">
+                {{ booking.timeDisplay }}
+              </div>
               <div class="font-bold text-white">{{ booking.roomName }}</div>
               <div class="text-white">{{ booking.title }}</div>
             </div>
@@ -138,7 +148,24 @@ const meetingDates = computed(() => {
   }
 })
 
-const colors = ['emerald', 'sky', 'yellow', 'purple', 'pink', 'indigo']
+const bgColors = [
+  'bg-emerald-800',
+  'bg-purple-800',
+  'bg-yellow-800',
+  'bg-pink-800',
+  'bg-indigo-800',
+  'bg-sky-800'
+]
+const textColors = [
+  'text-emerald-100',
+  'text-purple-200',
+  'text-yellow-100',
+  'text-pink-200',
+  'text-indigo-200',
+  'text-sky-200'
+]
+
+function showBooking(booking) {}
 
 async function fetchData() {
   try {
@@ -152,17 +179,20 @@ async function fetchData() {
     state.rooms = resp.rooms.map((r, rIdx) => {
       return {
         ...r,
-        color: colors[rIdx] ?? 'sky'
+        bgColor: bgColors[rIdx] ?? 'bg-sky-800',
+        textColor: textColors[rIdx] ?? 'bg-sky-800'
       }
     })
-    state.bookings = resp.bookings.map((b) => {
+    state.bookings = resp.bookings.map((b, idx) => {
       const start = DateTime.fromISO(b.start, { zone: state.meeting.timezone })
       const end = DateTime.fromISO(b.end, { zone: state.meeting.timezone })
       return {
         ...b,
         start,
         end,
-        timeDisplay: `${start.toFormat('H:mm')}-${end.toFormat('H:mm')}`
+        timeDisplay: `${start.toFormat('H:mm')}-${end.toFormat('H:mm')}`,
+        room: state.rooms.find((r) => r.id === b.roomId),
+        orderIdx: idx
       }
     })
     state.days = []

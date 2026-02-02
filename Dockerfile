@@ -12,6 +12,7 @@ COPY index.js index.js
 COPY meeting.json meeting.json
 COPY package.json package.json
 COPY package-lock.json package-lock.json
+COPY vite.config.js vite.config.js
 COPY dist dist
 
 RUN npm ci --omit=dev

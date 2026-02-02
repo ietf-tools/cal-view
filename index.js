@@ -116,11 +116,11 @@ async function fetchCalData() {
   state.isFetching = false
 }
 
-// setInterval(() => {
-//   if (state.isFetching) {
-//     return
-//   }
-//   fetchCalData()
-// }, 60000)
+setInterval(() => {
+  if (state.isFetching) {
+    return
+  }
+  fetchCalData()
+}, 60000)
 
 fetchCalData()

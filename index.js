@@ -32,7 +32,7 @@ fastify.register(FastifySensible)
 // })
 await fastify.register(FastifyVite, {
   root: import.meta.dirname,
-  dev: true,
+  dev: !(process.env.NODE_ENV === 'production'),
   spa: true
 })
 

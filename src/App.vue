@@ -165,7 +165,7 @@
             leave-from="opacity-100 scale-100"
             leave-to="opacity-0 scale-95">
             <DialogPanel
-              class="w-full max-w-xl relative transform overflow-hidden rounded-2xl text-white text-left align-middle shadow-xl transition-all">
+              class="w-full max-w-xl relative transform overflow-hidden rounded-2xl text-white text-left align-middle shadow-xl transition-all bg-gray-900">
               <div class="absolute top-0 right-0 hidden pt-4 pr-4 sm:block">
                 <button
                   type="button"
@@ -198,8 +198,7 @@
                   </span>
                 </div>
               </div>
-              <div
-                class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 dark:bg-gray-700/25">
+              <div class="px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 bg-gray-900">
                 <a
                   class="inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-xs sm:ml-3 sm:w-auto bg-sky-600 hover:bg-sky-500 cursor-pointer"
                   :href="state.details.location"

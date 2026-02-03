@@ -152,7 +152,7 @@
         leave="duration-200 ease-in"
         leave-from="opacity-100"
         leave-to="opacity-0">
-        <div class="fixed inset-0 bg-black/25"></div>
+        <div class="fixed inset-0 bg-black/75"></div>
       </TransitionChild>
       <div class="fixed inset-0 overflow-y-auto">
         <div class="flex min-h-full items-center justify-center p-4 text-center">
@@ -185,16 +185,23 @@
                 <DialogDescription
                   as="div"
                   :class="state.details.room.textColor + ' font-semibold mt-2'">
-                  <div>{{ state.details.timeDisplay }} &middot; {{ state.details.roomName }}</div>
+                  <div>
+                    {{ state.details.timeDisplay }}
+                    <span class="text-sm font-normal tracking-tight">( {{ state.timezone }} )</span>
+                    &middot;
+                    {{ state.details.roomName }}
+                  </div>
                 </DialogDescription>
                 <div class="mt-4 text-sm">{{ state.details.description }}</div>
                 <div class="flex items-center mt-4 text-sm">
                   <span class="font-semibold mr-2">Organizer:</span>
                   <span
                     >{{ state.details.organizerName }} &middot;
-                    <a class="text-sky-300" :href="'mailto:' + state.details.organizerEmail">{{
-                      state.details.organizerEmail
-                    }}</a>
+                    <a
+                      class="text-sky-300 hover:text-sky-200"
+                      :href="'mailto:' + state.details.organizerEmail"
+                      >{{ state.details.organizerEmail }}</a
+                    >
                   </span>
                 </div>
               </div>

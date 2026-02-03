@@ -1,4 +1,4 @@
-# Calendar View for Side Meetings
+# Side Meetings
 
 This project displays a calendar view for all side meetings bookings from Cal.
 

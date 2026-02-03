@@ -9,6 +9,8 @@ import meeting from './meeting.json' with { type: 'json' }
 
 /* global process */
 
+const DEV_MODE = !(process.env.NODE_ENV === 'production')
+
 const state = {
   data: {
     meeting,
@@ -32,7 +34,7 @@ fastify.register(FastifySensible)
 // })
 await fastify.register(FastifyVite, {
   root: import.meta.dirname,
-  dev: !(process.env.NODE_ENV === 'production'),
+  dev: DEV_MODE,
   spa: true
 })
 
@@ -107,7 +109,9 @@ async function fetchCalData() {
       description: bk.description,
       start: bk.start,
       end: bk.end,
-      location: bk.location
+      location: bk.location,
+      organizerName: bk.bookingFieldsResponses.name,
+      organizerEmail: bk.bookingFieldsResponses.email
     }))
     console.info(`${new Date().toISOString()} - Fetched ${resp.data?.length ?? 0} bookings.`)
   } catch (err) {
@@ -116,11 +120,13 @@ async function fetchCalData() {
   state.isFetching = false
 }
 
-setInterval(() => {
-  if (state.isFetching) {
-    return
-  }
-  fetchCalData()
-}, 60000)
+if (!DEV_MODE) {
+  setInterval(() => {
+    if (state.isFetching) {
+      return
+    }
+    fetchCalData()
+  }, 60000)
+}
 
 fetchCalData()

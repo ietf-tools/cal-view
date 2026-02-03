@@ -68,7 +68,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ghcr.io/ietf-tools/cal-view:${{ steps.semver.outputs.nextStrict }}
+            ghcr.io/ietf-tools/sidemeetings:${{ steps.semver.outputs.nextStrict }}
 
       - name: Create Draft Release
         uses: ncipollo/release-action@v1.20.0
@@ -76,7 +76,7 @@ jobs:
           prerelease: true
           draft: false
           owner: ietf-tools
-          repo: cal-view
+          repo: sidemeetings
           commit: ${{ github.sha }}
           tag: ${{ steps.semver.outputs.nextStrict }}
           name: ${{ steps.semver.outputs.nextStrict }}
@@ -99,7 +99,7 @@ jobs:
           makeLatest: true
           draft: false
           owner: ietf-tools
-          repo: cal-view
+          repo: sidemeetings
           tag: ${{ steps.semver.outputs.nextStrict }}
           name: ${{ steps.semver.outputs.nextStrict }}
           body: ${{ steps.changelog.outputs.changes }}

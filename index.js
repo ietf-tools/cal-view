@@ -101,19 +101,23 @@ async function fetchCalData() {
     if (resp?.status !== 'success') {
       throw new Error(resp?.error ?? 'Invalid Response')
     }
-    state.data.bookings = resp.data.map((bk) => ({
-      id: bk.id,
-      roomId: bk.eventType.id,
-      roomName: state.data.rooms.find((r) => r.id === bk.eventType.id)?.title,
-      title: bk.bookingFieldsResponses.title,
-      description: bk.description,
-      start: bk.start,
-      end: bk.end,
-      location: bk.location,
-      organizerName: bk.bookingFieldsResponses.name,
-      organizerEmail: bk.bookingFieldsResponses.email
-    }))
-    console.info(`${new Date().toISOString()} - Fetched ${resp.data?.length ?? 0} bookings.`)
+    state.data.bookings = resp.data
+      .filter((bk) => bk.status !== 'pending')
+      .map((bk) => ({
+        id: bk.id,
+        roomId: bk.eventType.id,
+        roomName: state.data.rooms.find((r) => r.id === bk.eventType.id)?.title,
+        title: bk.bookingFieldsResponses.title,
+        description: bk.description,
+        start: bk.start,
+        end: bk.end,
+        location: bk.location,
+        organizerName: bk.bookingFieldsResponses.name,
+        organizerEmail: bk.bookingFieldsResponses.email
+      }))
+    console.info(
+      `${new Date().toISOString()} - Fetched ${resp.data?.length ?? 0} bookings, ${state.data.bookings?.length ?? 0} are confirmed.`
+    )
   } catch (err) {
     console.warn(err)
   }

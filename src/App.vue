@@ -298,16 +298,16 @@ const days = computed(() => {
 })
 
 const bgColors = [
-  'bg-yellow-600',
-  'bg-pink-700',
+  'bg-linear-to-t from-sky-800 to-sky-700',
+  'bg-linear-to-t from-yellow-700 to-yellow-600',
   'bg-purple-800',
   'bg-emerald-800',
   'bg-indigo-800',
   'bg-sky-800'
 ]
 const textColors = [
+  'text-sky-200',
   'text-yellow-100',
-  'text-pink-200',
   'text-purple-200',
   'text-emerald-200',
   'text-indigo-200',

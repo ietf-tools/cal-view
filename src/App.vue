@@ -29,7 +29,7 @@
                 tabindex="1"
                 class="relative inline-flex items-center gap-x-1.5 rounded-md bg-sky-500 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-sky-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500">
                 <PlusIcon class="-ml-0.5 size-5" aria-hidden="true" />
-                Request Meeting Room
+                Book a Side Meeting
               </a>
             </div>
           </div>
@@ -44,7 +44,7 @@
             tabindex="1"
             class="relative flex items-center gap-x-1.5 rounded-md bg-sky-500 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-sky-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500">
             <PlusIcon class="-ml-0.5 size-5" aria-hidden="true" />
-            Request Meeting Room
+            Book a Side Meeting
           </a>
         </div>
       </DisclosurePanel>
@@ -119,7 +119,7 @@
             <div
               v-if="day.bookings.length < 1"
               class="bg-black/10 rounded-sm px-2 py-20 text-center italic text-sm text-sky-200/80">
-              No side meeting booked yet.
+              No side meetings have been booked yet.
             </div>
             <div
               v-for="booking of day.bookings"
@@ -298,18 +298,18 @@ const days = computed(() => {
 })
 
 const bgColors = [
-  'bg-emerald-800',
+  'bg-yellow-600',
+  'bg-pink-700',
   'bg-purple-800',
-  'bg-yellow-800',
-  'bg-pink-800',
+  'bg-emerald-800',
   'bg-indigo-800',
   'bg-sky-800'
 ]
 const textColors = [
-  'text-emerald-100',
-  'text-purple-200',
   'text-yellow-100',
   'text-pink-200',
+  'text-purple-200',
+  'text-emerald-200',
   'text-indigo-200',
   'text-sky-200'
 ]

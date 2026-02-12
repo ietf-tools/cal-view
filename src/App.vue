@@ -157,6 +157,20 @@
           </div>
         </div>
       </div>
+      <div
+        v-if="state.bookings.length > 0"
+        class="text-center mt-5 text-sm text-sky-200 sm:flex justify-center items-center gap-x-1.5">
+        <a
+          href="#"
+          class="relative inline-flex items-center gap-x-1.5 justify-center rounded-md border-t border-l border-l-white/30 border-t-white/30 bg-emerald-700 hover:bg-emerald-600 px-3 py-0.5 sm:py-1 text-sm text-emerald-100"
+          @click.stop.prevent="addToCalendar(true)">
+          <CalendarDaysIcon class="-ml-0.5 size-4" aria-hidden="true" />
+          Add all to calendar
+          <small class="bg-emerald-900 text-emerald-100 rounded px-1 py-0.5 ml-0.5">.ics</small>
+        </a>
+        or click on a single event above to view the details / download that specific event .ics
+        file.
+      </div>
     </div>
   </main>
 
@@ -225,15 +239,27 @@
               </div>
               <div class="px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 bg-gray-900">
                 <a
-                  class="inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-xs sm:ml-3 sm:w-auto bg-sky-600 hover:bg-sky-500 cursor-pointer"
+                  class="relative inline-flex items-center gap-x-1.5 w-full justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-xs sm:ml-3 sm:w-auto bg-sky-600 hover:bg-sky-500 cursor-pointer"
                   :href="state.details.location"
                   target="_blank">
+                  <VideoCameraIcon class="-ml-0.5 size-5" aria-hidden="true" />
                   Join Meeting Call
+                </a>
+                <a
+                  class="relative inline-flex items-center gap-x-1.5 w-full justify-center rounded-md px-3 py-2 mt-3 sm:mt-0 text-sm font-semibold text-white shadow-xs sm:ml-3 sm:w-auto bg-emerald-600 hover:bg-emerald-500 cursor-pointer"
+                  @click="addToCalendar"
+                  target="_blank">
+                  <CalendarDaysIcon class="-ml-0.5 size-5" aria-hidden="true" />
+                  Add to Calendar
+                  <small class="bg-emerald-800 text-emerald-100 rounded px-1 py-0.5 ml-0.5"
+                    >.ics</small
+                  >
                 </a>
                 <button
                   type="button"
-                  class="mt-3 inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold shadow-xs inset-ring sm:mt-0 sm:w-auto bg-white/10 text-white inset-ring-white/5 hover:bg-white/20 cursor-pointer"
+                  class="relative inline-flex items-center gap-x-1.5 w-full justify-center rounded-md px-3 py-2 mt-3 sm:mt-0 text-sm font-semibold shadow-xs inset-ring sm:w-auto bg-white/10 text-white inset-ring-white/5 hover:bg-white/20 cursor-pointer"
                   @click="closeDetails">
+                  <XMarkIcon class="-ml-0.5 size-5" aria-hidden="true" />
                   Close
                 </button>
               </div>
@@ -257,11 +283,12 @@ import {
   TransitionRoot,
   TransitionChild
 } from '@headlessui/vue'
-import { Bars3Icon, XMarkIcon } from '@heroicons/vue/24/outline'
+import { Bars3Icon, CalendarDaysIcon, VideoCameraIcon, XMarkIcon } from '@heroicons/vue/24/outline'
 import { PlusIcon } from '@heroicons/vue/20/solid'
 import { ChevronDownIcon } from '@heroicons/vue/16/solid'
 import { computed, reactive } from 'vue'
 import { DateTime } from 'luxon'
+import ical from 'ical-generator'
 
 const state = reactive({
   isLoading: false,
@@ -333,15 +360,94 @@ const textColors = [
   'text-sky-200'
 ]
 
+/**
+ * Set new display timezone
+ *
+ * @param {string} newTz Timezone
+ */
 function setTimezone(newTz) {
   state.timezone = newTz || Intl.DateTimeFormat().resolvedOptions().timeZone
   return false
 }
 
+/**
+ * Close event details modal
+ */
 function closeDetails() {
   state.detailsShown = false
 }
 
+/**
+ * Generate ICS
+ *
+ * @param {Boolean} all Add all sidemeetings to ics when true
+ */
+function addToCalendar(all = false) {
+  const calendar = ical({ name: 'IETF Side Meetings' })
+
+  if (all) {
+    if (state.bookings.length < 1) {
+      return window.alert('Cannot generate .ics file because no side meeting has been booked yet.')
+    }
+    for (const booking of state.bookings) {
+      calendar.createEvent({
+        summary: booking.title,
+        description: booking.description + '\n\n' + booking.location,
+        start: booking.start,
+        end: booking.end,
+        location: booking.roomName,
+        url: window.location.href,
+        timezone: state.meeting.timezone,
+        organizer: {
+          email: booking.organizerEmail,
+          name: booking.organizerName
+        }
+      })
+    }
+
+    initiateCalDownload(calendar.toString(), 'sidemeetings.ics')
+  } else {
+    calendar.createEvent({
+      summary: state.details.title,
+      description: state.details.description + '\n\n' + state.details.location,
+      start: state.details.start,
+      end: state.details.end,
+      location: state.details.roomName,
+      url: window.location.href,
+      timezone: state.meeting.timezone,
+      organizer: {
+        email: state.details.organizerEmail,
+        name: state.details.organizerName
+      }
+    })
+
+    initiateCalDownload(calendar.toString(), 'sidemeeting.ics')
+  }
+}
+
+/**
+ * Trigger ICS Download
+ *
+ * @param contents ICS contents
+ * @param fileName Suggested Download Filename
+ */
+function initiateCalDownload(contents, fileName) {
+  const calBlob = new Blob([contents], { type: 'text/calendar; charset=utf-8' })
+  let calA = document.createElement('a')
+  calA.download = fileName
+  calA.href = URL.createObjectURL(calBlob)
+  calA.dataset.downloadurl = ['text/calendar', calA.download, calA.href].join(':')
+  calA.style.display = 'none'
+  document.body.appendChild(calA)
+  calA.click()
+  document.body.removeChild(calA)
+}
+
+/**
+ * Display event details modal
+ *
+ * @param {Object} booking Event details
+ */
 function showDetails(booking) {
   state.details = {
     ...booking,
@@ -350,6 +456,9 @@ function showDetails(booking) {
   state.detailsShown = true
 }
 
+/**
+ * Fetch sidemeetings from server
+ */
 async function fetchData() {
   if (state.isLoading) {
     return

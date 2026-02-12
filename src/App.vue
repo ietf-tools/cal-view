@@ -247,7 +247,7 @@
                 </a>
                 <a
                   class="relative inline-flex items-center gap-x-1.5 w-full justify-center rounded-md px-3 py-2 mt-3 sm:mt-0 text-sm font-semibold text-white shadow-xs sm:ml-3 sm:w-auto bg-emerald-600 hover:bg-emerald-500 cursor-pointer"
-                  @click="addToCalendar"
+                  @click="addToCalendar(false)"
                   target="_blank">
                   <CalendarDaysIcon class="-ml-0.5 size-5" aria-hidden="true" />
                   Add to Calendar

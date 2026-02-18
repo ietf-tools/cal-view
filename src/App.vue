@@ -47,7 +47,7 @@
                 tabindex="1"
                 class="relative inline-flex items-center gap-x-1.5 rounded-md border-t border-l border-l-white/30 border-t-white/40 bg-linear-to-t from-sky-600 to-sky-500 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:to-sky-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500">
                 <PlusIcon class="-ml-0.5 size-5" aria-hidden="true" />
-                Book a Side Meeting
+                Request a Side Meeting
               </a>
             </div>
           </div>
@@ -62,7 +62,7 @@
             tabindex="1"
             class="relative flex items-center gap-x-1.5 rounded-md border-t border-l border-l-white/30 border-t-white/40 bg-linear-to-t from-sky-600 to-sky-500 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:to-sky-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500">
             <PlusIcon class="-ml-0.5 size-5" aria-hidden="true" />
-            Book a Side Meeting
+            Request a Side Meeting
           </a>
         </div>
       </DisclosurePanel>

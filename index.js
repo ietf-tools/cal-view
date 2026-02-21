@@ -113,7 +113,8 @@ async function fetchCalData() {
         end: bk.end,
         location: bk.location,
         organizerName: bk.bookingFieldsResponses.name,
-        organizerEmail: bk.bookingFieldsResponses.email
+        organizerEmail: bk.bookingFieldsResponses.email,
+        areas: bk.bookingFieldsResponses.areas ?? bk.bookingFieldsResponses.Areas ?? []
       }))
     console.info(
       `${new Date().toISOString()} - Fetched ${resp.data?.length ?? 0} bookings, ${state.data.bookings?.length ?? 0} are confirmed.`

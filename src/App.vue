@@ -145,14 +145,24 @@
               @click="showDetails(booking)"
               :tabindex="booking.orderIdx + 3"
               :class="
-                booking.room.bgColor +
-                ' rounded-sm p-2 text-sm border-l border-l-white/30 border-t border-t-white/30 shadow hover:outline-2 hover:outline-offset-2 hover:outline-sky-200/80 focus:outline-2 focus:outline-offset-2 focus:outline-sky-200/80 cursor-pointer'
+                'rounded-sm p-2 text-sm border-l border-t border-white/30 shadow hover:outline-2 hover:outline-offset-2 hover:outline-sky-200/80 focus:outline-2 focus:outline-offset-2 focus:outline-sky-200/80 cursor-pointer ' +
+                booking.room.bgColor
               ">
               <div :class="booking.room.textColor + ' font-semibold'">
                 {{ booking.timeDisplay }}
               </div>
-              <div class="font-bold text-white">{{ booking.roomName }}</div>
-              <div class="text-white">{{ booking.title }}</div>
+              <div class="font-bold">{{ booking.roomName }}</div>
+              <div>{{ booking.title }}</div>
+              <div
+                v-if="booking.areas.length > 0"
+                class="flex flex-wrap gap-1 mt-1 text-xs text-white/90">
+                <div
+                  v-for="area of booking.areas"
+                  :key="area"
+                  class="bg-black/40 px-1 py-px rounded">
+                  {{ area }}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -162,7 +172,7 @@
         class="text-center mt-5 text-sm text-sky-200 sm:flex justify-center items-center gap-x-1.5">
         <a
           href="#"
-          class="relative inline-flex items-center gap-x-1.5 justify-center rounded-md border-t border-l border-l-white/30 border-t-white/30 bg-emerald-700 hover:bg-emerald-600 px-3 py-0.5 sm:py-1 text-sm text-emerald-100"
+          class="relative inline-flex items-center gap-x-1.5 justify-center rounded-md border-t border-l border-white/30 bg-emerald-700 hover:bg-emerald-600 px-3 py-0.5 sm:py-1 text-sm text-emerald-100"
           @click.stop.prevent="addToCalendar(true)">
           <CalendarDaysIcon class="-ml-0.5 size-4" aria-hidden="true" />
           Add all to calendar
@@ -225,7 +235,7 @@
                   </div>
                 </DialogDescription>
                 <div class="mt-4 text-sm">{{ state.details.description }}</div>
-                <div class="flex items-center mt-4 text-sm">
+                <div v-if="!state.details.isUnavailable" class="flex items-center mt-4 text-sm">
                   <span class="font-semibold mr-2">Organizer:</span>
                   <span
                     >{{ state.details.organizerName }} &middot;
@@ -236,9 +246,21 @@
                     >
                   </span>
                 </div>
+                <div
+                  v-if="state.details.areas.length > 0"
+                  class="flex items-center flex-wrap gap-1 mt-3 text-sm">
+                  <span class="font-semibold mr-2">Areas:</span>
+                  <div
+                    v-for="area of state.details.areas"
+                    :key="area"
+                    class="bg-black/40 px-1 py-px rounded text-xs text-white/90">
+                    {{ area }}
+                  </div>
+                </div>
               </div>
               <div class="px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 bg-gray-900">
                 <a
+                  v-if="!state.details.isUnavailable"
                   class="relative inline-flex items-center gap-x-1.5 w-full justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-xs sm:ml-3 sm:w-auto bg-sky-600 hover:bg-sky-500 cursor-pointer"
                   :href="state.details.location"
                   target="_blank">
@@ -246,6 +268,7 @@
                   Join Meeting Call
                 </a>
                 <a
+                  v-if="!state.details.isUnavailable"
                   class="relative inline-flex items-center gap-x-1.5 w-full justify-center rounded-md px-3 py-2 mt-3 sm:mt-0 text-sm font-semibold text-white shadow-xs sm:ml-3 sm:w-auto bg-emerald-600 hover:bg-emerald-500 cursor-pointer"
                   @click="addToCalendar(false)"
                   target="_blank">
@@ -333,6 +356,13 @@ const days = computed(() => {
         .filter((b) => b.start >= dayStart && b.start <= dayEnd)
         .map((b) => ({
           ...b,
+          room: b.isUnavailable
+            ? {
+                ...b.room,
+                bgColor: `bg-slate-700 text-slate-300 border-t-2 ${b.room.borderColor}`,
+                textColor: 'text-slate-200'
+              }
+            : b.room,
           start: b.start.setZone(state.timezone),
           end: b.end.setZone(state.timezone),
           timeDisplay: `${b.start.setZone(state.timezone).toFormat('H:mm')}-${b.end.setZone(state.timezone).toFormat('H:mm')}`
@@ -344,12 +374,12 @@ const days = computed(() => {
 })
 
 const bgColors = [
-  'bg-linear-to-t from-sky-800 to-sky-700',
-  'bg-linear-to-t from-yellow-700 to-yellow-600',
-  'bg-purple-800',
-  'bg-emerald-800',
-  'bg-indigo-800',
-  'bg-sky-800'
+  'bg-linear-to-t from-sky-800 to-sky-700 text-white',
+  'bg-linear-to-t from-yellow-700 to-yellow-600 text-white',
+  'bg-purple-800 text-white',
+  'bg-emerald-800 text-white',
+  'bg-indigo-800 text-white',
+  'bg-sky-800 text-white'
 ]
 const textColors = [
   'text-sky-200',
@@ -358,6 +388,14 @@ const textColors = [
   'text-emerald-200',
   'text-indigo-200',
   'text-sky-200'
+]
+const borderColors = [
+  'border-t-sky-500',
+  'border-t-yellow-600',
+  'border-t-purple-200',
+  'border-t-emerald-200',
+  'border-t-indigo-200',
+  'border-t-sky-200'
 ]
 
 /**
@@ -389,7 +427,7 @@ function addToCalendar(all = false) {
     if (state.bookings.length < 1) {
       return window.alert('Cannot generate .ics file because no side meeting has been booked yet.')
     }
-    for (const booking of state.bookings) {
+    for (const booking of state.bookings.filter((b) => !b.isUnavailable)) {
       calendar.createEvent({
         summary: booking.title,
         description: booking.description + '\n\n' + booking.location,
@@ -479,7 +517,8 @@ async function fetchData() {
       return {
         ...r,
         bgColor: bgColors[rIdx] ?? 'bg-sky-800',
-        textColor: textColors[rIdx] ?? 'bg-sky-800'
+        textColor: textColors[rIdx] ?? 'text-sky-200',
+        borderColor: borderColors[rIdx] ?? 'border-sky-200'
       }
     })
     state.bookings = resp.bookings.map((b, idx) => {
@@ -491,6 +530,7 @@ async function fetchData() {
         end,
         timeDisplay: `${start.toFormat('H:mm')}-${end.toFormat('H:mm')}`,
         room: state.rooms.find((r) => r.id === b.roomId),
+        isUnavailable: b.title.toLowerCase() === 'unavailable',
         orderIdx: idx
       }
     })
